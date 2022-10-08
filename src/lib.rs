@@ -2,7 +2,7 @@ use matrix::Matrix;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use byteorder::{BigEndian, ReadBytesExt};
-use num_traits::NumCast;
+use num_traits::{Num, NumCast};
 
 pub fn load_images(path : &str) -> Matrix<f32> {
     let mut file = File::open(path).unwrap();
@@ -39,6 +39,14 @@ pub fn load_labels(path : &str) -> Vec<usize> {
     let mut res = Vec::<usize>::with_capacity(nb_labels);
     for _i in 0..nb_labels {
         res.push(reader.read_u8().unwrap() as usize);
+    }
+    res
+}
+
+pub fn labels_to_responses<T : Num>(labels : &Vec<usize>) -> Matrix<T> where T : Copy + NumCast {
+    let mut res : Matrix<T> = Matrix::zeros(labels.len(), 10);
+    for i in 0..labels.len() {
+        res[i][labels[i]] = NumCast::from(1).unwrap();
     }
     res
 }
