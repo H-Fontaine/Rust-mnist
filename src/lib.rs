@@ -2,9 +2,9 @@ use matrix::Matrix;
 use std::fs::File;
 use std::io::{Cursor, Read};
 use byteorder::{BigEndian, ReadBytesExt};
-use num_traits::{Num, NumCast};
+use num_traits::{Float, Num, NumCast};
 
-pub fn load_images(path : &str) -> Matrix<f32> {
+pub fn load_images<T : Num>(path : &str) -> Matrix<T> where T : Copy + NumCast {
     let mut file = File::open(path).unwrap();
     let mut buffer: Vec<u8> = Vec::new();
     file.read_to_end(&mut buffer).unwrap(); //read the entire file
@@ -17,7 +17,7 @@ pub fn load_images(path : &str) -> Matrix<f32> {
     let nb_columns = reader.read_u32::<BigEndian>().unwrap();
     assert_eq!(nb_columns, 28);
 
-    let mut res : Matrix<f32> = Matrix::zeros(nb_images as usize, (nb_rows * nb_columns) as usize);
+    let mut res : Matrix<T> = Matrix::zeros(nb_images as usize, (nb_rows * nb_columns) as usize);
 
     for i in 0..(nb_images as usize) {
         for j in 0..res.columns() {
@@ -51,11 +51,11 @@ pub fn labels_to_responses<T : Num>(labels : &Vec<usize>) -> Matrix<T> where T :
     res
 }
 
-pub fn display(images : &Matrix<f32>, labels : &Vec<usize>, index_image : usize) {
+pub fn display<F : Float, T : Num>(images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) where T : PartialOrd<F> {
     println!("This number is a {}", labels[index_image]);
     for i in 0..28 {
         for j in 0..28 {
-            if images[index_image][i * 28 + j] >= 0.45f32 {
+            if images[index_image][i * 28 + j] >= NumCast::from(0.45).unwrap() {
                 print!("#")
             } else {
                 print!(" ")
