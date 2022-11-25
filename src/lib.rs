@@ -1,10 +1,16 @@
 use matrix::Matrix;
 use std::fs::File;
 use std::io::{Cursor, Read};
+use std::ops::Div;
 use byteorder::{BigEndian, ReadBytesExt};
-use num_traits::{Float, Num, NumCast};
+use num_traits::{Zero, NumCast};
 
-pub fn load_images<T : Num>(path : &str) -> Matrix<T> where T : Copy + NumCast {
+
+/*
+Load images from the mnist dataset stored at the provided path in a matrix
+ - path : &str          Where the file is stored
+*/
+pub fn load_images<T>(path : &str) -> Matrix<T> where T : Zero + Copy + NumCast + Div<T, Output = T> {
     let mut file = File::open(path).unwrap();
     let mut buffer: Vec<u8> = Vec::new();
     file.read_to_end(&mut buffer).unwrap(); //read the entire file
@@ -27,6 +33,11 @@ pub fn load_images<T : Num>(path : &str) -> Matrix<T> where T : Copy + NumCast {
     res / NumCast::from(255).unwrap()
 }
 
+
+/*
+Load labels from the mnist dataset stored at the provided path in a vec
+ - path : &str          Where the file is stored
+*/
 pub fn load_labels(path : &str) -> Vec<usize> {
     let mut file = File::open(path).unwrap();
     let mut buffer: Vec<u8> = Vec::new();
@@ -43,7 +54,14 @@ pub fn load_labels(path : &str) -> Vec<usize> {
     res
 }
 
-pub fn labels_to_responses<T : Num>(labels : &Vec<usize>) -> Matrix<T> where T : Copy + NumCast {
+
+/*
+Translate the provided labels in matrix of response understandable for the neural network :
+The matrix returned res = (a)<i,j>    i in [0, label size]        is for all i, j : (a)<i,j>  = | 1 if j = label[i]
+                                      j in [0, 9]                                               | 0 if not
+ - labels : &Vec<usize>         The labels
+*/
+pub fn labels_to_responses<T>(labels : &Vec<usize>) -> Matrix<T> where T : Zero + Copy + NumCast {
     let mut res : Matrix<T> = Matrix::zeros(labels.len(), 10);
     for i in 0..labels.len() {
         res[i][labels[i]] = NumCast::from(1).unwrap();
@@ -51,7 +69,14 @@ pub fn labels_to_responses<T : Num>(labels : &Vec<usize>) -> Matrix<T> where T :
     res
 }
 
-pub fn display<F : Float, T : Num>(images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) where T : PartialOrd<F> {
+
+/*
+Display the chosen labeled image in the console
+ - images : &Matrix<T>          The images that can be display
+ - labels : &Vec<usize>         The labels associated to the images
+ - index_image : usize          The index of the image to display
+*/
+pub fn display<T>(images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) where T : NumCast + PartialOrd {
     println!("This number is a {}", labels[index_image]);
     for i in 0..28 {
         for j in 0..28 {
