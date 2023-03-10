@@ -59,8 +59,8 @@ pub fn load_labels(path : &str) -> Vec<usize> {
 /*
 Select the provided numbers according to the provided vector
  */
-pub fn select_specific_numbers<B, V, W, T>(images : B, labels : V, wanted_numbers : W) -> (Matrix<T>, Vec<usize>) where T : Copy, B : Borrow<Matrix<T>>, V : Borrow<Vec<usize>>, W : Borrow<Vec<usize>> {
-    let wanted_number_set : HashSet<usize> = wanted_numbers.borrow().clone().into_iter().collect();
+pub fn select_specific_numbers<T>(images : &Matrix<T>, labels : &Vec<usize>, wanted_numbers : Vec<usize>) -> (Matrix<T>, Vec<usize>) where T : Copy {
+    let wanted_number_set : HashSet<usize> = wanted_numbers.into_iter().collect();
     let wanted_images = images.borrow().chose_lines_by_bool(labels.borrow().into_iter().map(|a| {wanted_number_set.contains(a)}).collect::<Vec<bool>>());
     let mut wanted_label = Vec::new();
     for (bool, label) in labels.borrow().into_iter().map(|a| {wanted_number_set.contains(a)}).zip(labels.borrow().into_iter()) {
