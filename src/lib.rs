@@ -144,8 +144,8 @@ pub fn save_image_normalized<T>(path : &str, images : &Matrix<T>, labels : &Vec<
     let drawing_area = BitMapBackend::new(path, (500, 500)).into_drawing_area();
     let child_drowing_areas = drawing_area.split_evenly(((images.columns() as f64).sqrt() as usize, (images.columns() as f64).sqrt() as usize));
     for (area, &grey_value) in child_drowing_areas.into_iter().zip(images[index_image].into_iter()) {
-        let mut value : u8 = NumCast::from(grey_value).unwrap() * 255f32 as u8;
-        value = 255 - value;
+        let temp : f32 = NumCast::from(grey_value).unwrap();
+        let value = 255 - (temp * 255f32) as u8;
         area.fill(&RGBColor(value, value, value)).unwrap();
     }
     drawing_area.present().unwrap();
