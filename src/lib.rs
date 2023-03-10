@@ -112,6 +112,12 @@ pub fn print<T>(images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) 
     }
 }
 
+/*
+Save the image at the provided location
+ - images : &Matrix<T>          The images that can be saved
+ - labels : &Vec<usize>         The labels associated to the images
+ - index_image : usize          The index of the image to display
+*/
 pub fn save_image<T>(path : &str, images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) where T : NumCast + PartialOrd + Copy {
     let path = path.to_owned() + &"/Image of a ".to_owned() + &labels[index_image].to_string() + &" .png".to_owned();
     let path = path.as_str();
@@ -121,11 +127,29 @@ pub fn save_image<T>(path : &str, images : &Matrix<T>, labels : &Vec<usize>, ind
         let mut value : u8 = NumCast::from(grey_value).unwrap();
         value = 255 - value;
         area.fill(&RGBColor(value, value, value)).unwrap();
-        //area.fill(&Palette99::pick(0))?;
     }
     drawing_area.present().unwrap();
 }
 
+
+/*
+Save the normalized image at the provided location
+ - images : &Matrix<T>          The images that can be saved
+ - labels : &Vec<usize>         The labels associated to the images
+ - index_image : usize          The index of the image to display
+*/
+pub fn save_image_normalized<T>(path : &str, images : &Matrix<T>, labels : &Vec<usize>, index_image : usize) where T : NumCast + PartialOrd + Copy {
+    let path = path.to_owned() + &"/Image of a ".to_owned() + &labels[index_image].to_string() + &" .png".to_owned();
+    let path = path.as_str();
+    let drawing_area = BitMapBackend::new(path, (500, 500)).into_drawing_area();
+    let child_drowing_areas = drawing_area.split_evenly(((images.columns() as f64).sqrt() as usize, (images.columns() as f64).sqrt() as usize));
+    for (area, &grey_value) in child_drowing_areas.into_iter().zip(images[index_image].into_iter()) {
+        let mut value : u8 = NumCast::from(grey_value).unwrap() * 255f32 as u8;
+        value = 255 - value;
+        area.fill(&RGBColor(value, value, value)).unwrap();
+    }
+    drawing_area.present().unwrap();
+}
 
 
 
